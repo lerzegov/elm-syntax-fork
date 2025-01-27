@@ -8,6 +8,18 @@
         "Elm.Dependency",
         "Elm.Interface",
         "Elm.Parser",
+        "Elm.Parser.Base",
+        "Elm.Parser.Comments",
+        "Elm.Parser.Declarations",
+        "Elm.Parser.Expose",
+        "Elm.Parser.Expression",
+        "Elm.Parser.File",
+        "Elm.Parser.Imports",
+        "Elm.Parser.Layout",
+        "Elm.Parser.Modules",
+        "Elm.Parser.Patterns",
+        "Elm.Parser.Tokens",
+        "Elm.Parser.TypeAnnotation",
         "Elm.Processing",
         "Elm.RawFile",
         "Elm.Writer",
@@ -27,7 +39,8 @@
         "Elm.Syntax.Signature",
         "Elm.Syntax.TypeAlias",
         "Elm.Syntax.TypeAnnotation",
-        "Elm.Syntax.Type"
+        "Elm.Syntax.Type",
+        "ParserFast"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
