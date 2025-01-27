@@ -1,5 +1,6 @@
 module Elm.Parser.TypeAnnotation exposing (typeAnnotation, typeAnnotationNoFnExcludingTypedWithArguments)
 
+{-| @docs typeAnnotation, typeAnnotationNoFnExcludingTypedWithArguments-}
 import Elm.Parser.Layout as Layout
 import Elm.Parser.Tokens as Tokens
 import Elm.Syntax.ModuleName exposing (ModuleName)
@@ -11,6 +12,7 @@ import ParserWithComments exposing (WithComments)
 import Rope
 
 
+{-| typeAnnotation functionality-}
 typeAnnotation : Parser (WithComments (Node TypeAnnotation))
 typeAnnotation =
     ParserFast.map3
@@ -48,6 +50,7 @@ typeAnnotation =
         )
 
 
+{-| typeAnnotationNoFnExcludingTypedWithArguments functionality-}
 typeAnnotationNoFnExcludingTypedWithArguments : Parser (WithComments (Node TypeAnnotation))
 typeAnnotationNoFnExcludingTypedWithArguments =
     ParserFast.oneOf4

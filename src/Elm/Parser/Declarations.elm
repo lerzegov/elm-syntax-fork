@@ -1,5 +1,6 @@
 module Elm.Parser.Declarations exposing (declaration)
 
+{-| @docs declaration-}
 import Elm.Parser.Comments as Comments
 import Elm.Parser.Expression exposing (expression)
 import Elm.Parser.Layout as Layout
@@ -20,6 +21,7 @@ import ParserWithComments exposing (Comments, WithComments)
 import Rope
 
 
+{-| declaration functionality-}
 declaration : Parser (WithComments (Node Declaration))
 declaration =
     ParserFast.oneOf5

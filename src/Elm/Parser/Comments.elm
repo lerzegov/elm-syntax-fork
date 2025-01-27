@@ -1,11 +1,13 @@
 module Elm.Parser.Comments exposing (declarationDocumentation, moduleDocumentation, multilineComment, singleLineComment)
 
+{-| @docs declarationDocumentation, moduleDocumentation, multilineComment, singleLineComment-}
 import Char.Extra
 import Elm.Syntax.Documentation exposing (Documentation)
 import Elm.Syntax.Node exposing (Node(..))
 import ParserFast exposing (Parser)
 
 
+{-| singleLineComment functionality-}
 singleLineComment : ParserFast.Parser (Node String)
 singleLineComment =
     ParserFast.symbolFollowedBy "--"
@@ -34,6 +36,7 @@ singleLineComment =
         )
 
 
+{-| multilineComment functionality-}
 multilineComment : ParserFast.Parser (Node String)
 multilineComment =
     ParserFast.offsetSourceAndThen
@@ -59,11 +62,13 @@ multiLineCommentNoCheck =
         ( '-', "}" )
 
 
+{-| moduleDocumentation functionality-}
 moduleDocumentation : Parser (Node String)
 moduleDocumentation =
     declarationDocumentation
 
 
+{-| declarationDocumentation functionality-}
 declarationDocumentation : ParserFast.Parser (Node Documentation)
 declarationDocumentation =
     -- technically making the whole parser fail on multi-line comments would be "correct"

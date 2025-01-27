@@ -1,5 +1,6 @@
 module Elm.Parser.Imports exposing (importDefinition)
 
+{-| @docs importDefinition-}
 import Elm.Parser.Base exposing (moduleName)
 import Elm.Parser.Expose exposing (exposeDefinition)
 import Elm.Parser.Layout as Layout
@@ -11,6 +12,7 @@ import ParserWithComments exposing (Comments, WithComments)
 import Rope
 
 
+{-| importDefinition functionality-}
 importDefinition : Parser (WithComments (Node Import))
 importDefinition =
     ParserFast.map5WithStartLocation

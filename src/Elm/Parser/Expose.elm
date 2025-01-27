@@ -1,5 +1,6 @@
 module Elm.Parser.Expose exposing (exposeDefinition)
 
+{-| @docs exposeDefinition-}
 import Elm.Parser.Layout as Layout
 import Elm.Parser.Tokens as Tokens
 import Elm.Syntax.Exposing exposing (Exposing(..), TopLevelExpose(..))
@@ -9,6 +10,7 @@ import ParserWithComments exposing (WithComments)
 import Rope
 
 
+{-| exposeDefinition functionality-}
 exposeDefinition : Parser (WithComments (Node Exposing))
 exposeDefinition =
     ParserFast.map3WithRange

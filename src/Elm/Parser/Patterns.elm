@@ -1,5 +1,6 @@
 module Elm.Parser.Patterns exposing (pattern, patternNotDirectlyComposing)
 
+{-| @docs pattern, patternNotDirectlyComposing-}
 import Elm.Parser.Layout as Layout
 import Elm.Parser.Tokens as Tokens
 import Elm.Syntax.Node as Node exposing (Node(..))
@@ -16,6 +17,7 @@ type PatternComposedWith
     | PatternComposedWithCons (Node Pattern)
 
 
+{-| pattern functionality-}
 pattern : Parser (WithComments (Node Pattern))
 pattern =
     ParserFast.lazy (\() -> composablePatternTryToCompose)
@@ -240,6 +242,7 @@ composablePattern =
         charPattern
 
 
+{-| patternNotDirectlyComposing functionality-}
 patternNotDirectlyComposing : Parser (WithComments (Node Pattern))
 patternNotDirectlyComposing =
     ParserFast.oneOf9

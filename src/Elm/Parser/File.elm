@@ -1,5 +1,6 @@
 module Elm.Parser.File exposing (file)
 
+{-| @docs file-}
 import Elm.Parser.Comments as Comments
 import Elm.Parser.Declarations exposing (declaration)
 import Elm.Parser.Imports exposing (importDefinition)
@@ -13,6 +14,7 @@ import ParserWithComments exposing (WithComments)
 import Rope
 
 
+{-| file functionality-}
 file : ParserFast.Parser File
 file =
     ParserFast.map4

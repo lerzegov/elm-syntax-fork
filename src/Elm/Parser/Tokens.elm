@@ -18,6 +18,7 @@ module Elm.Parser.Tokens exposing
 
 -}
 
+
 import Char
 import Char.Extra
 import Elm.Syntax.Node exposing (Node(..))

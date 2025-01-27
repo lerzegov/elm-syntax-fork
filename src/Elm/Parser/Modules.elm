@@ -1,5 +1,6 @@
 module Elm.Parser.Modules exposing (moduleDefinition)
 
+{-| @docs moduleDefinition-}
 import Elm.Parser.Base exposing (moduleName)
 import Elm.Parser.Expose exposing (exposeDefinition)
 import Elm.Parser.Layout as Layout
@@ -12,6 +13,7 @@ import ParserWithComments exposing (WithComments)
 import Rope
 
 
+{-| moduleDefinition functionality-}
 moduleDefinition : Parser (WithComments (Node Module))
 moduleDefinition =
     ParserFast.oneOf3

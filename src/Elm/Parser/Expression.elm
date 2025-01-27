@@ -1,5 +1,6 @@
 module Elm.Parser.Expression exposing (expression)
 
+{-| @docs expression-}
 import Elm.Parser.Layout as Layout
 import Elm.Parser.Patterns as Patterns
 import Elm.Parser.Tokens as Tokens
@@ -228,6 +229,7 @@ precedence9ComposeL =
     infixLeft 9 "<<"
 
 
+{-| expression functionality-}
 expression : Parser (WithComments (Node Expression))
 expression =
     extendedSubExpressionOptimisticLayout Ok .extensionRight
