@@ -2,6 +2,26 @@
 
 Elm Syntax in Elm: for parsing and writing Elm in Elm.
 
+## Publishing a new release of elm-syntax-fork
+For a new version of your elm package you need to:
+
+Make and test your changes locally
+Commit and push to GitHub
+Create a new version tag following semantic versioning (e.g., 1.0.1 or 1.1.0):
+
+bashCopygit tag 1.0.1
+git push origin 1.0.1
+
+Update version in elm.json to match new tag
+Create the release on GitHub using the new tag
+Do git checkout 1.0.1 locally
+Run elm publish
+
+The version number should follow semantic versioning:
+
+Patch (1.0.0 -> 1.0.1): for bug fixes
+Minor (1.0.0 -> 1.1.0): for new features that don't break existing code
+Major (1.0.0 -> 2.0.0): for breaking changes
 ## How does this work?
 
 When Elm code is parsed, it's converted into an Abstract Syntax Tree (AST).
