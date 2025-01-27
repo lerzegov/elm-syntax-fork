@@ -12,13 +12,13 @@ module Elm.Parser.Layout exposing
     , positivelyIndentedPlusFollowedBy
     )
 
-{-| @docs module Elm.Parser.Layout exposing-}
+{-| @docs layoutStrict, layoutStrictFollowedBy, layoutStrictFollowedByComments, layoutStrictFollowedByWithComments, maybeAroundBothSides, maybeLayout, moduleLevelIndentationFollowedBy, onTopIndentationFollowedBy, optimisticLayout, positivelyIndentedFollowedBy, positivelyIndentedPlusFollowedBy -}
 import Elm.Parser.Comments as Comments
 import ParserFast exposing (Parser)
 import ParserWithComments exposing (Comments, WithComments)
 import Rope
 
-
+{-| functionality -}
 whitespaceAndCommentsOrEmpty : Parser Comments
 whitespaceAndCommentsOrEmpty =
     ParserFast.skipWhileWhitespaceFollowedBy
@@ -42,7 +42,7 @@ whitespaceAndCommentsOrEmpty =
             Rope.empty
         )
 
-
+{-| functionality -}
 fromMultilineCommentNodeOrEmptyOnProblem : Parser Comments
 fromMultilineCommentNodeOrEmptyOnProblem =
     ParserFast.map2OrSucceed
@@ -55,7 +55,7 @@ fromMultilineCommentNodeOrEmptyOnProblem =
         whitespaceAndCommentsOrEmptyLoop
         Rope.empty
 
-
+{-| functionality -}
 fromSingleLineCommentNode : Parser Comments
 fromSingleLineCommentNode =
     ParserFast.map2
@@ -67,7 +67,7 @@ fromSingleLineCommentNode =
         )
         whitespaceAndCommentsOrEmptyLoop
 
-
+{-| functionality -}
 whitespaceAndCommentsOrEmptyLoop : Parser Comments
 whitespaceAndCommentsOrEmptyLoop =
     ParserFast.loopWhileSucceeds
@@ -80,12 +80,12 @@ whitespaceAndCommentsOrEmptyLoop =
         (\right soFar -> soFar |> Rope.prependToFilled (Rope.one right))
         identity
 
-
+{-| functionality -}
 maybeLayout : Parser Comments
 maybeLayout =
     whitespaceAndCommentsOrEmpty |> endsPositivelyIndented
 
-
+{-| functionality -}
 endsPositivelyIndented : Parser a -> Parser a
 endsPositivelyIndented parser =
     ParserFast.validateEndColumnIndentation
@@ -108,7 +108,7 @@ positivelyIndentedPlusFollowedBy extraIndent nextParser =
                 problemPositivelyIndented
         )
 
-
+{-| functionality -}
 positivelyIndentedFollowedBy : Parser a -> Parser a
 positivelyIndentedFollowedBy nextParser =
     ParserFast.columnIndentAndThen
@@ -120,17 +120,17 @@ positivelyIndentedFollowedBy nextParser =
                 problemPositivelyIndented
         )
 
-
+{-| functionality -}
 problemPositivelyIndented : Parser a
 problemPositivelyIndented =
     ParserFast.problem "must be positively indented"
 
-
+{-| functionality -}
 optimisticLayout : Parser Comments
 optimisticLayout =
     whitespaceAndCommentsOrEmpty
 
-
+{-| functionality -}
 layoutStrictFollowedByComments : Parser Comments -> Parser Comments
 layoutStrictFollowedByComments nextParser =
     ParserFast.map2
@@ -140,7 +140,7 @@ layoutStrictFollowedByComments nextParser =
         optimisticLayout
         (onTopIndentationFollowedBy nextParser)
 
-
+{-| functionality -}
 layoutStrictFollowedByWithComments : Parser (WithComments syntax) -> Parser (WithComments syntax)
 layoutStrictFollowedByWithComments nextParser =
     ParserFast.map2
@@ -152,7 +152,7 @@ layoutStrictFollowedByWithComments nextParser =
         optimisticLayout
         (onTopIndentationFollowedBy nextParser)
 
-
+{-| functionality -}
 layoutStrictFollowedBy : Parser syntax -> Parser (WithComments syntax)
 layoutStrictFollowedBy nextParser =
     ParserFast.map2
@@ -162,12 +162,12 @@ layoutStrictFollowedBy nextParser =
         optimisticLayout
         (onTopIndentationFollowedBy nextParser)
 
-
+{-| functionality -}
 layoutStrict : Parser Comments
 layoutStrict =
     optimisticLayout |> endsTopIndented
 
-
+{-| functionality -}
 moduleLevelIndentationFollowedBy : Parser a -> Parser a
 moduleLevelIndentationFollowedBy nextParser =
     ParserFast.columnAndThen
@@ -179,12 +179,12 @@ moduleLevelIndentationFollowedBy nextParser =
                 problemModuleLevelIndentation
         )
 
-
+{-| functionality -}
 problemModuleLevelIndentation : Parser a
 problemModuleLevelIndentation =
     ParserFast.problem "must be on module-level indentation"
 
-
+{-| functionality -}
 endsTopIndented : Parser a -> Parser a
 endsTopIndented parser =
     ParserFast.validateEndColumnIndentation
@@ -192,7 +192,7 @@ endsTopIndented parser =
         "must be on top indentation"
         parser
 
-
+{-| functionality -}
 onTopIndentationFollowedBy : Parser a -> Parser a
 onTopIndentationFollowedBy nextParser =
     ParserFast.columnIndentAndThen
@@ -204,12 +204,12 @@ onTopIndentationFollowedBy nextParser =
                 problemTopIndentation
         )
 
-
+{-| functionality -}
 problemTopIndentation : Parser a
 problemTopIndentation =
     ParserFast.problem "must be on top indentation"
 
-
+{-| functionality -}
 maybeAroundBothSides : Parser (WithComments b) -> Parser (WithComments b)
 maybeAroundBothSides x =
     ParserFast.map3

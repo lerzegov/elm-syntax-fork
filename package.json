@@ -1,13 +1,13 @@
 {
-  "name": "elm-syntax",
+  "name": "elm-syntax-fork",
   "version": "0.13.0-dev",
   "description": "Elm syntax",
   "repository": {
     "type": "git",
-    "url": "github.com/stil4m/elm-syntax"
+    "url": "github.com/lerzegov/elm-syntax-fork"
   },
   "bugs": {
-    "url": "https://github.com/stil4m/elm-syntax/issues"
+    "url": "https://github.com/lerzegov/elm-syntax-fork/issues"
   },
   "scripts": {
     "test": "npm-run-all --print-name --silent --sequential test:make test:format test:run test:review",

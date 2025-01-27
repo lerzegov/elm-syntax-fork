@@ -25,7 +25,7 @@ import Elm.Syntax.Node exposing (Node(..))
 import Elm.Syntax.Range exposing (Range)
 import ParserFast
 
-
+{-| functionality -}
 isNotReserved : String -> Bool
 isNotReserved name =
     case name of
@@ -78,12 +78,12 @@ isNotReserved name =
         _ ->
             True
 
-
+{-| functionality -}
 inToken : ParserFast.Parser ()
 inToken =
     ParserFast.keyword "in" ()
 
-
+{-| functionality -}
 escapedCharValueMap : (Char -> res) -> ParserFast.Parser res
 escapedCharValueMap charToRes =
     ParserFast.oneOf7
@@ -105,7 +105,7 @@ escapedCharValueMap charToRes =
             )
         )
 
-
+{-| functionality -}
 hexStringToInt : String -> Int
 hexStringToInt string =
     String.foldr
@@ -118,7 +118,7 @@ hexStringToInt string =
         string
         |> .result
 
-
+{-| functionality -}
 charToHex : Char -> Int
 charToHex c =
     case c of
@@ -189,7 +189,7 @@ charToHex c =
         _ ->
             15
 
-
+{-| functionality -}
 characterLiteralMapWithRange : (Range -> Char -> res) -> ParserFast.Parser res
 characterLiteralMapWithRange rangeAndCharToRes =
     ParserFast.symbolFollowedBy "'"
@@ -213,7 +213,7 @@ characterLiteralMapWithRange rangeAndCharToRes =
             |> ParserFast.followedBySymbol "'"
         )
 
-
+{-| functionality -}
 singleOrTripleQuotedStringLiteralMapWithRange : (Range -> String -> res) -> ParserFast.Parser res
 singleOrTripleQuotedStringLiteralMapWithRange rangeAndStringToRes =
     ParserFast.symbolFollowedBy "\""
@@ -238,7 +238,7 @@ singleOrTripleQuotedStringLiteralMapWithRange rangeAndStringToRes =
             singleQuotedStringLiteralAfterDoubleQuote
         )
 
-
+{-| functionality -}
 singleQuotedStringLiteralAfterDoubleQuote : ParserFast.Parser String
 singleQuotedStringLiteralAfterDoubleQuote =
     ParserFast.loopUntil (ParserFast.symbol "\"" ())
@@ -264,7 +264,7 @@ singleQuotedStringLiteralAfterDoubleQuote =
         )
         identity
 
-
+{-| functionality -}
 tripleQuotedStringLiteralOfterTripleDoubleQuote : ParserFast.Parser String
 tripleQuotedStringLiteralOfterTripleDoubleQuote =
     ParserFast.loopUntil (ParserFast.symbol "\"\"\"" ())
@@ -291,7 +291,7 @@ tripleQuotedStringLiteralOfterTripleDoubleQuote =
         )
         identity
 
-
+{-| functionality -}
 functionName : ParserFast.Parser String
 functionName =
     ParserFast.ifFollowedByWhileValidateWithoutLinebreak
@@ -299,7 +299,7 @@ functionName =
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
         isNotReserved
 
-
+{-| functionality -}
 functionNameNode : ParserFast.Parser (Node String)
 functionNameNode =
     ParserFast.ifFollowedByWhileValidateMapWithRangeWithoutLinebreak Node
@@ -307,7 +307,7 @@ functionNameNode =
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
         isNotReserved
 
-
+{-| functionality -}
 functionNameMapWithRange : (Range -> String -> res) -> ParserFast.Parser res
 functionNameMapWithRange rangeAndNameToResult =
     ParserFast.ifFollowedByWhileValidateMapWithRangeWithoutLinebreak
@@ -316,7 +316,7 @@ functionNameMapWithRange rangeAndNameToResult =
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
         isNotReserved
 
-
+{-| functionality -}
 functionNameNotInfixNode : ParserFast.Parser (Node String)
 functionNameNotInfixNode =
     ParserFast.ifFollowedByWhileValidateMapWithRangeWithoutLinebreak Node
@@ -324,28 +324,28 @@ functionNameNotInfixNode =
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
         (\name -> name /= "infix" && isNotReserved name)
 
-
+{-| functionality -}
 typeName : ParserFast.Parser String
 typeName =
     ParserFast.ifFollowedByWhileWithoutLinebreak
         Char.Extra.unicodeIsUpperFast
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
 
-
+{-| functionality -}
 typeNameMapWithRange : (Range -> String -> res) -> ParserFast.Parser res
 typeNameMapWithRange rangeAndNameToRes =
     ParserFast.ifFollowedByWhileMapWithRangeWithoutLinebreak rangeAndNameToRes
         Char.Extra.unicodeIsUpperFast
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
 
-
+{-| typeNameNode functionality-}
 typeNameNode : ParserFast.Parser (Node String)
 typeNameNode =
     ParserFast.ifFollowedByWhileMapWithRangeWithoutLinebreak Node
         Char.Extra.unicodeIsUpperFast
         Char.Extra.unicodeIsAlphaNumOrUnderscoreFast
 
-
+{-| functionality -}
 isAllowedOperatorToken : String -> Bool
 isAllowedOperatorToken operatorCandidateToValidate =
     case operatorCandidateToValidate of
@@ -424,7 +424,7 @@ isAllowedOperatorToken operatorCandidateToValidate =
         _ ->
             False
 
-
+{-| functionality -}
 isOperatorSymbolChar : Char -> Bool
 isOperatorSymbolChar c =
     case c of
@@ -470,12 +470,12 @@ isOperatorSymbolChar c =
         _ ->
             False
 
-
+{-| functionality -}
 equal : ParserFast.Parser ()
 equal =
     ParserFast.symbol "=" ()
 
-
+{-| functionality -}
 parensEnd : ParserFast.Parser ()
 parensEnd =
     ParserFast.symbol ")" ()

@@ -14,115 +14,23 @@ module ParserFast exposing
     , problem
     )
 
-{-|
-
-@docs Parser, run
-
-
-### a note about backtracking and committing
-
-By default, even the smallest parsers itself commit, even if no characters end up being consumed.
-This will behave exactly how you'd expect pretty much always,
-e.g. when differentiating between `let`-expression, records and references, since a simple symbol is enough to tell them apart.
-
-You might however run into unintuitive behavior with e.g. whitespace (which commits even after seeing 0 blank characters):
-
-    ParserFast.symbolFollowedBy "("
-        (ParserFast.oneOf2
-            (ParserFast.skipWhileWhitespaceFollowedBy
-                parenthesizedAfterOpeningParens
-            )
-            (ParserFast.symbol ")" Unit)
-        )
-
-With `elm/parser`, the above will work perfectly fine since
-the whitespace parser can succeed but still
-track back to the unit case in case `parenthesizedAfterOpeningParens`
-fails (without committing).
-
-With `ParserFast`, you need to either
-
-  - check for `)` first. This should be preferred in >90% of cases
-
-  - _add_ a `skipWhileWhitespaceBacktracksIfEmptyFollowedBy` in this module with something like
-
-        if s1.offset > s0.offset then
-            parseNext s1 |> pStepCommit
-
-        else
-            parseNext s1
-
-  - if applicable/feasible in that situation,
-    build a whitespace parser that always ignores at least one character
-
-(this note does not just apply to whitespace!)
-
-
-# Exact match primitives
-
-@docs symbol, symbolWithEndLocation, symbolWithRange, symbolFollowedBy, symbolBacktrackableFollowedBy, followedBySymbol
-@docs keyword, keywordFollowedBy
-
-
-# Fuzzy match primitives
-
-@docs anyChar, while, whileWithoutLinebreak, whileMapWithRange, ifFollowedByWhileWithoutLinebreak, ifFollowedByWhileMapWithoutLinebreak, ifFollowedByWhileMapWithRangeWithoutLinebreak, ifFollowedByWhileValidateWithoutLinebreak, ifFollowedByWhileValidateMapWithRangeWithoutLinebreak, whileWithoutLinebreakAnd2PartUtf16ToResultAndThen, whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySymbol
+{-| @docs Parser, run
+@docs symbol, symbolWithEndLocation, symbolWithRange, symbolFollowedBy, symbolBacktrackableFollowedBy
+@docs followedBySymbol, keyword, keywordFollowedBy, anyChar, while, whileWithoutLinebreak, whileMapWithRange
+@docs ifFollowedByWhileWithoutLinebreak, ifFollowedByWhileMapWithoutLinebreak
+@docs ifFollowedByWhileMapWithRangeWithoutLinebreak, ifFollowedByWhileValidateWithoutLinebreak
+@docs ifFollowedByWhileValidateMapWithRangeWithoutLinebreak, whileWithoutLinebreakAnd2PartUtf16ToResultAndThen
+@docs whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySymbol
 @docs integerDecimalMapWithRange, integerDecimalOrHexadecimalMapWithRange, floatOrIntegerDecimalOrHexadecimalMapWithRange
-
-
-# Whitespace primitives
-
 @docs skipWhileWhitespaceFollowedBy, followedBySkipWhileWhitespace, nestableMultiCommentMapWithRange
-
-
-# Flow
-
-@docs map, validate, lazy
-
-
-## sequence
-
-@docs map2, map2WithStartLocation, map2WithRange, map3, map3WithStartLocation, map3WithRange, map4, map4WithRange, map5, map5WithStartLocation, map5WithRange, map6, map6WithStartLocation, map6WithRange, map7WithRange, map8WithStartLocation, map9WithRange
-
-@docs loopWhileSucceeds, loopWhileSucceedsOntoResultFromParser, loopUntil
-
-
-## choice
-
-Parsing JSON for example, the values can be strings, floats, booleans,
-arrays, objects, or null. You need a way to pick one of them! Here is a
-sample of what that code might look like:
-
-    type Json
-        = Number Float
-        | Boolean Bool
-        | Null
-
-    json : Parser Json
-    json =
-        oneOf4
-            (ParserFast.map Number float)
-            (ParserFast.keyword "true" (Boolean True))
-            (ParserFast.keyword "False" (Boolean False))
-            (ParserFast.keyword "null" Null)
-
-This parser will keep trying down the list of parsers until one of them starts committing.
-Once a path is chosen, it does not come back and try the others.
-
-@docs orSucceed, map2OrSucceed, map2WithRangeOrSucceed, map3OrSucceed, map4OrSucceed, oneOf2, oneOf2Map, oneOf2MapWithStartRowColumnAndEndRowColumn, oneOf2OrSucceed, oneOf3, oneOf4, oneOf5, oneOf7, oneOf9
-
-
-# Indentation, Locations and source
-
-@docs withIndentSetToColumn, withIndentSetToColumnMinus, columnIndentAndThen, validateEndColumnIndentation
-@docs mapWithRange, columnAndThen, offsetSourceAndThen, offsetSourceAndThenOrSucceed
-@docs problem
-
-
-# Test-only
-
--}
-
+@docs map, validate, lazy, map2, map2WithStartLocation, map2WithRange, map3, map3WithStartLocation, map3WithRange
+@docs map4, map4WithRange, map5, map5WithStartLocation, map5WithRange, map6, map6WithStartLocation, map6WithRange
+@docs map7WithRange, map8WithStartLocation, map9WithRange, loopWhileSucceeds
+@docs loopWhileSucceedsOntoResultFromParser, loopUntil, orSucceed, map2OrSucceed, map2WithRangeOrSucceed
+@docs map3OrSucceed, map4OrSucceed, oneOf2, oneOf2Map, oneOf2MapWithStartRowColumnAndEndRowColumn
+@docs oneOf2OrSucceed, oneOf3, oneOf4, oneOf5, oneOf7, oneOf9, withIndentSetToColumn, withIndentSetToColumnMinus
+@docs columnIndentAndThen, validateEndColumnIndentation, mapWithRange, columnAndThen, offsetSourceAndThen
+@docs offsetSourceAndThenOrSucceed, problem -}
 import Char.Extra
 import Elm.Syntax.Range exposing (Location, Range)
 import Parser
@@ -294,6 +202,7 @@ lazy thunk =
         )
 
 
+{-| validate functionality-}
 validate : (a -> Bool) -> String -> Parser a -> Parser a
 validate isOkay problemOnNotOkay (Parser parseA) =
     Parser
@@ -311,6 +220,7 @@ validate isOkay problemOnNotOkay (Parser parseA) =
         )
 
 
+{-| columnAndThen functionality-}
 columnAndThen : (Int -> Parser a) -> Parser a
 columnAndThen callback =
     Parser
@@ -346,6 +256,7 @@ columnIndentAndThen callback =
         )
 
 
+{-| validateEndColumnIndentation functionality-}
 validateEndColumnIndentation : (Int -> Int -> Bool) -> String -> Parser a -> Parser a
 validateEndColumnIndentation isOkay problemOnIsNotOkay (Parser parse) =
     Parser
@@ -385,6 +296,7 @@ offsetSourceAndThen callback =
         )
 
 
+{-| offsetSourceAndThenOrSucceed functionality-}
 offsetSourceAndThenOrSucceed : (Int -> String -> Maybe (Parser a)) -> a -> Parser a
 offsetSourceAndThenOrSucceed callback fallback =
     Parser
@@ -418,6 +330,7 @@ map2 func (Parser parseA) (Parser parseB) =
         )
 
 
+{-| map2WithStartLocation functionality-}
 map2WithStartLocation : (Location -> a -> b -> value) -> Parser a -> Parser b -> Parser value
 map2WithStartLocation func (Parser parseA) (Parser parseB) =
     Parser
@@ -436,6 +349,7 @@ map2WithStartLocation func (Parser parseA) (Parser parseB) =
         )
 
 
+{-| map2WithRange functionality-}
 map2WithRange : (Range -> a -> b -> value) -> Parser a -> Parser b -> Parser value
 map2WithRange func (Parser parseA) (Parser parseB) =
     Parser
@@ -454,6 +368,7 @@ map2WithRange func (Parser parseA) (Parser parseB) =
         )
 
 
+{-| map3 functionality-}
 map3 : (a -> b -> c -> value) -> Parser a -> Parser b -> Parser c -> Parser value
 map3 func (Parser parseA) (Parser parseB) (Parser parseC) =
     Parser
@@ -477,6 +392,7 @@ map3 func (Parser parseA) (Parser parseB) (Parser parseC) =
         )
 
 
+{-| map3WithRange functionality-}
 map3WithRange : (Range -> a -> b -> c -> value) -> Parser a -> Parser b -> Parser c -> Parser value
 map3WithRange func (Parser parseA) (Parser parseB) (Parser parseC) =
     Parser
@@ -500,6 +416,7 @@ map3WithRange func (Parser parseA) (Parser parseB) (Parser parseC) =
         )
 
 
+{-| map4 functionality-}
 map4 : (a -> b -> c -> d -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser value
 map4 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) =
     Parser
@@ -528,6 +445,7 @@ map4 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) =
         )
 
 
+{-| map4WithRange functionality-}
 map4WithRange : (Range -> a -> b -> c -> d -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser value
 map4WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) =
     Parser
@@ -556,6 +474,7 @@ map4WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
         )
 
 
+{-| map3WithStartLocation functionality-}
 map3WithStartLocation : (Location -> a -> b -> c -> value) -> Parser a -> Parser b -> Parser c -> Parser value
 map3WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) =
     Parser
@@ -579,6 +498,7 @@ map3WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) =
         )
 
 
+{-| map5 functionality-}
 map5 : (a -> b -> c -> d -> e -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser value
 map5 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) =
     Parser
@@ -612,6 +532,7 @@ map5 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parse
         )
 
 
+{-| map5WithStartLocation functionality-}
 map5WithStartLocation : (Location -> a -> b -> c -> d -> e -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser value
 map5WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) =
     Parser
@@ -645,6 +566,7 @@ map5WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Pars
         )
 
 
+{-| map5WithRange functionality-}
 map5WithRange : (Range -> a -> b -> c -> d -> e -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser value
 map5WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) =
     Parser
@@ -678,6 +600,7 @@ map5WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
         )
 
 
+{-| map6 functionality-}
 map6 : (a -> b -> c -> d -> e -> f -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser value
 map6 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) =
     Parser
@@ -716,6 +639,7 @@ map6 func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parse
         )
 
 
+{-| map6WithStartLocation functionality-}
 map6WithStartLocation : (Location -> a -> b -> c -> d -> e -> f -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser value
 map6WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) =
     Parser
@@ -754,6 +678,7 @@ map6WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Pars
         )
 
 
+{-| map6WithRange functionality-}
 map6WithRange : (Range -> a -> b -> c -> d -> e -> f -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser value
 map6WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) =
     Parser
@@ -792,6 +717,7 @@ map6WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
         )
 
 
+{-| map7WithRange functionality-}
 map7WithRange : (Range -> a -> b -> c -> d -> e -> f -> g -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser g -> Parser value
 map7WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) (Parser parseG) =
     Parser
@@ -835,6 +761,7 @@ map7WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
         )
 
 
+{-| map8WithStartLocation functionality-}
 map8WithStartLocation : (Location -> a -> b -> c -> d -> e -> f -> g -> h -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser g -> Parser h -> Parser value
 map8WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) (Parser parseG) (Parser parseH) =
     Parser
@@ -883,6 +810,7 @@ map8WithStartLocation func (Parser parseA) (Parser parseB) (Parser parseC) (Pars
         )
 
 
+{-| map9WithRange functionality-}
 map9WithRange : (Range -> a -> b -> c -> d -> e -> f -> g -> h -> i -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> Parser e -> Parser f -> Parser g -> Parser h -> Parser i -> Parser value
 map9WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) (Parser parseE) (Parser parseF) (Parser parseG) (Parser parseH) (Parser parseI) =
     Parser
@@ -937,13 +865,13 @@ map9WithRange func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
 
 
 {-| Indicate that a parser has reached a dead end. "Everything was going fine
-until I ran into this problem." Check out the -AndThen helpers for where to use this.
--}
+until I ran into this problem." Check out the -AndThen helpers for where to use this. problem functionality-}
 problem : String -> Parser a
 problem msg =
     Parser (\s -> Bad False (ExpectingCustom s.row s.col msg))
 
 
+{-| orSucceed functionality-}
 orSucceed : Parser a -> a -> Parser a
 orSucceed (Parser attemptFirst) secondRes =
     Parser
@@ -961,6 +889,7 @@ orSucceed (Parser attemptFirst) secondRes =
         )
 
 
+{-| map2OrSucceed functionality-}
 map2OrSucceed : (a -> b -> value) -> Parser a -> Parser b -> value -> Parser value
 map2OrSucceed func (Parser parseA) (Parser parseB) fallback =
     Parser
@@ -983,6 +912,7 @@ map2OrSucceed func (Parser parseA) (Parser parseB) fallback =
         )
 
 
+{-| map2WithRangeOrSucceed functionality-}
 map2WithRangeOrSucceed : (Range -> a -> b -> value) -> Parser a -> Parser b -> value -> Parser value
 map2WithRangeOrSucceed func (Parser parseA) (Parser parseB) fallback =
     Parser
@@ -1005,6 +935,7 @@ map2WithRangeOrSucceed func (Parser parseA) (Parser parseB) fallback =
         )
 
 
+{-| map3OrSucceed functionality-}
 map3OrSucceed : (a -> b -> c -> value) -> Parser a -> Parser b -> Parser c -> value -> Parser value
 map3OrSucceed func (Parser parseA) (Parser parseB) (Parser parseC) fallback =
     Parser
@@ -1032,6 +963,7 @@ map3OrSucceed func (Parser parseA) (Parser parseB) (Parser parseC) fallback =
         )
 
 
+{-| map4OrSucceed functionality-}
 map4OrSucceed : (a -> b -> c -> d -> value) -> Parser a -> Parser b -> Parser c -> Parser d -> value -> Parser value
 map4OrSucceed func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parseD) fallback =
     Parser
@@ -1064,6 +996,7 @@ map4OrSucceed func (Parser parseA) (Parser parseB) (Parser parseC) (Parser parse
         )
 
 
+{-| oneOf2Map functionality-}
 oneOf2Map :
     (first -> choice)
     -> Parser first
@@ -1095,6 +1028,7 @@ oneOf2Map firstToChoice (Parser attemptFirst) secondToChoice (Parser attemptSeco
         )
 
 
+{-| oneOf2MapWithStartRowColumnAndEndRowColumn functionality-}
 oneOf2MapWithStartRowColumnAndEndRowColumn :
     (Int -> Int -> first -> Int -> Int -> choice)
     -> Parser first
@@ -1130,6 +1064,7 @@ oneOf2MapWithStartRowColumnAndEndRowColumn firstToChoice (Parser attemptFirst) s
         )
 
 
+{-| oneOf2 functionality-}
 oneOf2 : Parser a -> Parser a -> Parser a
 oneOf2 (Parser attemptFirst) (Parser attemptSecond) =
     Parser
@@ -1156,6 +1091,7 @@ oneOf2 (Parser attemptFirst) (Parser attemptSecond) =
         )
 
 
+{-| oneOf2OrSucceed functionality-}
 oneOf2OrSucceed : Parser a -> Parser a -> a -> Parser a
 oneOf2OrSucceed (Parser attemptFirst) (Parser attemptSecond) thirdRes =
     Parser
@@ -1182,6 +1118,7 @@ oneOf2OrSucceed (Parser attemptFirst) (Parser attemptSecond) thirdRes =
         )
 
 
+{-| oneOf3 functionality-}
 oneOf3 : Parser a -> Parser a -> Parser a -> Parser a
 oneOf3 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) =
     Parser
@@ -1217,6 +1154,7 @@ oneOf3 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) =
         )
 
 
+{-| oneOf4 functionality-}
 oneOf4 : Parser a -> Parser a -> Parser a -> Parser a -> Parser a
 oneOf4 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) (Parser attemptFourth) =
     Parser
@@ -1261,6 +1199,7 @@ oneOf4 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) (Parse
         )
 
 
+{-| oneOf5 functionality-}
 oneOf5 : Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
 oneOf5 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) (Parser attemptFourth) (Parser attemptFifth) =
     Parser
@@ -1314,6 +1253,7 @@ oneOf5 (Parser attemptFirst) (Parser attemptSecond) (Parser attemptThird) (Parse
         )
 
 
+{-| oneOf7 functionality-}
 oneOf7 : Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
 oneOf7 (Parser attempt0) (Parser attempt1) (Parser attempt2) (Parser attempt3) (Parser attempt4) (Parser attempt5) (Parser attempt6) =
     Parser
@@ -1385,6 +1325,7 @@ oneOf7 (Parser attempt0) (Parser attempt1) (Parser attempt2) (Parser attempt3) (
         )
 
 
+{-| oneOf9 functionality-}
 oneOf9 : Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
 oneOf9 (Parser attempt0) (Parser attempt1) (Parser attempt2) (Parser attempt3) (Parser attempt4) (Parser attempt5) (Parser attempt6) (Parser attempt7) (Parser attempt8) =
     Parser
@@ -1489,8 +1430,7 @@ Maybe you have a value that is an integer or `null`:
     -- run nullOrInt "13"   == Ok (Just 13)
     -- run nullOrInt "null" == Ok Nothing
     -- run nullOrInt "zero" == Err ...
-
--}
+ map functionality-}
 map : (a -> b) -> Parser a -> Parser b
 map func (Parser parse) =
     Parser
@@ -1504,6 +1444,7 @@ map func (Parser parse) =
         )
 
 
+{-| loopWhileSucceeds functionality-}
 loopWhileSucceeds : Parser element -> folded -> (element -> folded -> folded) -> (folded -> res) -> Parser res
 loopWhileSucceeds element initialFolded reduce foldedToRes =
     Parser
@@ -1529,6 +1470,7 @@ loopWhileSucceedsHelp ((Parser parseElement) as element) soFar reduce foldedToRe
                 Good (foldedToRes soFar) s0
 
 
+{-| loopWhileSucceedsOntoResultFromParser functionality-}
 loopWhileSucceedsOntoResultFromParser :
     Parser element
     -> Parser folded
@@ -1547,6 +1489,7 @@ loopWhileSucceedsOntoResultFromParser element (Parser parseInitialFolded) reduce
         )
 
 
+{-| loopUntil functionality-}
 loopUntil : Parser () -> Parser element -> folded -> (element -> folded -> folded) -> (folded -> res) -> Parser res
 loopUntil endParser element initialFolded reduce foldedToRes =
     Parser
@@ -1595,8 +1538,7 @@ loopUntilHelp committedSoFar ((Parser parseEnd) as endParser) ((Parser parseElem
     int : Parser Int
     int =
         ParserFast.integerDecimalMapWithRange (\_ n -> n)
-
--}
+ integerDecimalMapWithRange functionality-}
 integerDecimalMapWithRange : (Range -> Int -> res) -> Parser res
 integerDecimalMapWithRange rangeAndIntToRes =
     Parser
@@ -1648,8 +1590,7 @@ integerDecimalMapWithRange rangeAndIntToRes =
     int : Parser Int
     int =
         ParserFast.integerDecimalOrHexadecimalMapWithRange (\_ n -> n) (\_ n -> n)
-
--}
+ integerDecimalOrHexadecimalMapWithRange functionality-}
 integerDecimalOrHexadecimalMapWithRange : (Range -> Int -> res) -> (Range -> Int -> res) -> Parser res
 integerDecimalOrHexadecimalMapWithRange rangeAndIntDecimalToRes rangeAndIntHexadecimalToRes =
     Parser
@@ -1708,8 +1649,7 @@ integerDecimalOrHexadecimalMapWithRange rangeAndIntDecimalToRes rangeAndIntHexad
     number : Parser Int
     number =
         ParserFast.integerDecimalOrHexadecimalMapWithRange (\_ n -> n) (\_ n -> n) (\_ n -> n)
-
--}
+ floatOrIntegerDecimalOrHexadecimalMapWithRange functionality-}
 floatOrIntegerDecimalOrHexadecimalMapWithRange : (Range -> Float -> res) -> (Range -> Int -> res) -> (Range -> Int -> res) -> Parser res
 floatOrIntegerDecimalOrHexadecimalMapWithRange rangeAndFloatToRes rangeAndIntDecimalToRes rangeAndIntHexadecimalToRes =
     Parser
@@ -2195,8 +2135,7 @@ or 2-part UTF-16 characters.
 **Note:** This is good for stuff like brackets and semicolons,
 but it might need extra validations for binary operators like `-` because you can find
 yourself in weird situations. For example, is `3--4` a typo? Or is it `3 - -4`?
-
--}
+ symbol functionality-}
 symbol : String -> res -> Parser res
 symbol str res =
     let
@@ -2225,6 +2164,7 @@ symbol str res =
         )
 
 
+{-| followedBySymbol functionality-}
 followedBySymbol : String -> Parser a -> Parser a
 followedBySymbol str (Parser parsePrevious) =
     let
@@ -2258,6 +2198,7 @@ followedBySymbol str (Parser parsePrevious) =
         )
 
 
+{-| symbolWithEndLocation functionality-}
 symbolWithEndLocation : String -> (Location -> res) -> Parser res
 symbolWithEndLocation str endLocationToRes =
     let
@@ -2292,6 +2233,7 @@ symbolWithEndLocation str endLocationToRes =
         )
 
 
+{-| symbolWithRange functionality-}
 symbolWithRange : String -> (Range -> res) -> Parser res
 symbolWithRange str startAndEndLocationToRes =
     let
@@ -2327,8 +2269,7 @@ symbolWithRange str startAndEndLocationToRes =
 
 
 {-| Make sure the given String isn't empty and does not contain \\n
-or 2-part UTF-16 characters.
--}
+or 2-part UTF-16 characters. symbolFollowedBy functionality-}
 symbolFollowedBy : String -> Parser next -> Parser next
 symbolFollowedBy str (Parser parseNext) =
     let
@@ -2359,8 +2300,7 @@ symbolFollowedBy str (Parser parseNext) =
 
 
 {-| Make sure the given String isn't empty and does not contain \\n
-or 2-part UTF-16 characters.
--}
+or 2-part UTF-16 characters. symbolBacktrackableFollowedBy functionality-}
 symbolBacktrackableFollowedBy : String -> Parser next -> Parser next
 symbolBacktrackableFollowedBy str (Parser parseNext) =
     let
@@ -2411,8 +2351,7 @@ or 2-part UTF-16 characters.
 character to make sure it is not a letter, digit, or underscore.
 This will help with the weird cases like
 `case(x, y)` being totally fine but `casex` not being fine.
-
--}
+ keyword functionality-}
 keyword : String -> res -> Parser res
 keyword kwd res =
     let
@@ -2451,8 +2390,7 @@ isSubCharAlphaNumOrUnderscore offset string =
 
 
 {-| Make sure the given String isn't empty and does not contain \\n
-or 2-part UTF-16 characters.
--}
+or 2-part UTF-16 characters. keywordFollowedBy functionality-}
 keywordFollowedBy : String -> Parser next -> Parser next
 keywordFollowedBy kwd (Parser parseNext) =
     let
@@ -2485,6 +2423,7 @@ keywordFollowedBy kwd (Parser parseNext) =
         )
 
 
+{-| anyChar functionality-}
 anyChar : Parser Char
 anyChar =
     Parser
@@ -2552,6 +2491,7 @@ charStringIsUtf16HighSurrogate charString =
     charString |> String.any Char.Extra.isUtf16Surrogate
 
 
+{-| whileMapWithRange functionality-}
 whileMapWithRange : (Char -> Bool) -> (Range -> String -> res) -> Parser res
 whileMapWithRange isGood rangeAndConsumedStringToRes =
     Parser
@@ -2640,6 +2580,7 @@ skipWhileWithoutLinebreakAnd2PartUtf16Help isGood offset src =
         offset
 
 
+{-| followedBySkipWhileWhitespace functionality-}
 followedBySkipWhileWhitespace : Parser before -> Parser before
 followedBySkipWhileWhitespace (Parser parseBefore) =
     Parser
@@ -2658,8 +2599,7 @@ followedBySkipWhileWhitespace (Parser parseBefore) =
         )
 
 
-{-| Match zero or more \\n, \\r and space characters, then proceed with the given parser
--}
+{-| Match zero or more \\n, \\r and space characters, then proceed with the given parser skipWhileWhitespaceFollowedBy functionality-}
 skipWhileWhitespaceFollowedBy : Parser next -> Parser next
 skipWhileWhitespaceFollowedBy (Parser parseNext) =
     Parser
@@ -2701,8 +2641,7 @@ changeIndent newIndent s =
 
 
 {-| For a given parser, take the current start column as indentation for the whole block
-parsed by the given parser
--}
+parsed by the given parser withIndentSetToColumn functionality-}
 withIndentSetToColumn : Parser a -> Parser a
 withIndentSetToColumn (Parser parse) =
     Parser
@@ -2716,6 +2655,7 @@ withIndentSetToColumn (Parser parse) =
         )
 
 
+{-| withIndentSetToColumnMinus functionality-}
 withIndentSetToColumnMinus : Int -> Parser a -> Parser a
 withIndentSetToColumnMinus columnToMoveIndentationBaseBackBy (Parser parse) =
     Parser
@@ -2729,6 +2669,7 @@ withIndentSetToColumnMinus columnToMoveIndentationBaseBackBy (Parser parse) =
         )
 
 
+{-| mapWithRange functionality-}
 mapWithRange :
     (Range -> a -> b)
     -> Parser a
@@ -2763,8 +2704,7 @@ This is saying it _must_ start with a lower-case character. After that,
 characters can be letters, digits, or underscores. It is also saying that if
 you run into any of these reserved names after parsing as much as possible,
 it is definitely not a variable.
-
--}
+ ifFollowedByWhileValidateWithoutLinebreak functionality-}
 ifFollowedByWhileValidateWithoutLinebreak :
     (Char -> Bool)
     -> (Char -> Bool)
@@ -2799,6 +2739,7 @@ ifFollowedByWhileValidateWithoutLinebreak firstIsOkay afterFirstIsOkay resultIsO
         )
 
 
+{-| whileWithoutLinebreakAnd2PartUtf16ToResultAndThen functionality-}
 whileWithoutLinebreakAnd2PartUtf16ToResultAndThen : (Char -> Bool) -> (String -> Result String intermediate) -> (intermediate -> Parser res) -> Parser res
 whileWithoutLinebreakAnd2PartUtf16ToResultAndThen whileCharIsOkay consumedStringToIntermediateOrErr intermediateToFollowupParser =
     Parser
@@ -2839,6 +2780,7 @@ whileWithoutLinebreakAnd2PartUtf16ToResultAndThen whileCharIsOkay consumedString
         )
 
 
+{-| whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySymbol functionality-}
 whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySymbol : (Range -> String -> res) -> (Char -> Bool) -> (String -> Bool) -> String -> Parser res
 whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySymbol whileRangeAndContentToRes whileCharIsOkay whileResultIsOkay mandatoryFinalSymbol =
     let
@@ -2890,6 +2832,7 @@ whileWithoutLinebreakAnd2PartUtf16ValidateMapWithRangeBacktrackableFollowedBySym
         )
 
 
+{-| ifFollowedByWhileValidateMapWithRangeWithoutLinebreak functionality-}
 ifFollowedByWhileValidateMapWithRangeWithoutLinebreak :
     (Range -> String -> res)
     -> (Char -> Bool)
@@ -2925,6 +2868,7 @@ ifFollowedByWhileValidateMapWithRangeWithoutLinebreak toResult firstIsOkay after
         )
 
 
+{-| ifFollowedByWhileWithoutLinebreak functionality-}
 ifFollowedByWhileWithoutLinebreak :
     (Char -> Bool)
     -> (Char -> Bool)
@@ -2950,6 +2894,7 @@ ifFollowedByWhileWithoutLinebreak firstIsOkay afterFirstIsOkay =
         )
 
 
+{-| ifFollowedByWhileMapWithRangeWithoutLinebreak functionality-}
 ifFollowedByWhileMapWithRangeWithoutLinebreak :
     (Range -> String -> res)
     -> (Char -> Bool)
@@ -2983,6 +2928,7 @@ ifFollowedByWhileMapWithRangeWithoutLinebreak rangeAndConsumedStringToRes firstI
         )
 
 
+{-| ifFollowedByWhileMapWithoutLinebreak functionality-}
 ifFollowedByWhileMapWithoutLinebreak :
     (String -> res)
     -> (Char -> Bool)
@@ -3011,8 +2957,7 @@ ifFollowedByWhileMapWithoutLinebreak consumedStringToRes firstIsOkay afterFirstI
         )
 
 
-{-| Parse multi-line comments that can itself contain other arbitrary multi-comments inside.
--}
+{-| Parse multi-line comments that can itself contain other arbitrary multi-comments inside. nestableMultiCommentMapWithRange functionality-}
 nestableMultiCommentMapWithRange : (Range -> String -> res) -> ( Char, String ) -> ( Char, String ) -> Parser res
 nestableMultiCommentMapWithRange rangeContentToRes ( openChar, openTail ) ( closeChar, closeTail ) =
     let
@@ -3064,6 +3009,7 @@ nestableMultiCommentMapWithRange rangeContentToRes ( openChar, openTail ) ( clos
         )
 
 
+{-| while functionality-}
 while : (Char -> Bool) -> Parser String
 while isGood =
     Parser
@@ -3079,6 +3025,7 @@ while isGood =
         )
 
 
+{-| whileWithoutLinebreak functionality-}
 whileWithoutLinebreak : (Char -> Bool) -> Parser String
 whileWithoutLinebreak isGood =
     Parser
