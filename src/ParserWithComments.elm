@@ -5,20 +5,22 @@ module ParserWithComments exposing
     , manyWithoutReverse
     , until
     )
-
+{-| @docs Comments, WithComments, many, manyWithoutReverse, until -}
 import Elm.Syntax.Node exposing (Node)
 import ParserFast exposing (Parser)
 import Rope exposing (Rope)
 
-
+{-| functionality-}
 type alias WithComments res =
     { comments : Comments, syntax : res }
 
 
+{-| functionality-}
 type alias Comments =
     Rope (Node String)
 
 
+{-| functionality-}
 until : Parser () -> Parser (WithComments a) -> Parser (WithComments (List a))
 until end element =
     ParserFast.loopUntil
@@ -37,6 +39,7 @@ until end element =
         )
 
 
+{-| functionality-}
 many : Parser (WithComments a) -> Parser (WithComments (List a))
 many p =
     ParserFast.loopWhileSucceeds p

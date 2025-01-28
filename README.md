@@ -7,9 +7,9 @@ For a new version of your elm package you need to:
 
 Make and test your changes locally
 Commit and push to GitHub
-Create a new version tag following semantic versioning (e.g., 1.0.1 or 1.1.0):
 
-bashCopygit tag 1.0.1
+Create a new version tag following semantic versioning (e.g., 1.0.1 or 1.1.0):
+git tag 1.0.1
 git push origin 1.0.1
 
 Update version in elm.json to match new tag

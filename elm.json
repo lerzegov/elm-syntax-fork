@@ -40,7 +40,8 @@
         "Elm.Syntax.TypeAlias",
         "Elm.Syntax.TypeAnnotation",
         "Elm.Syntax.Type",
-        "ParserFast"
+        "ParserFast",
+        "ParserWithComments"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
